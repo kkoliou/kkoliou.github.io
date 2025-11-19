@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Konstantinos Kolioulis</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <h1>Konstantinos Kolioulis</h1>
+      <ol class="site-nav">
+        <li><a href="#aboutme">about me</a></li>
+        <li><a href="#skills">skills</a></li>
+        <li><a href="#experience">experience</a></li>
+        <li><a href="#projects">projects</a></li>
+      </ol>
+    </header>
+
+    <main>
+      <section id="aboutme" class="section">
+        <p class="section-label">About me</p>
+        <p>
+          Experienced iOS Software Engineer with over 5 years of hands-on experience in mobile app development and
+            enthusiasm for exploring new technologies. Skilled in building reliable, high-quality iOS applications and
+            dedicated to creating smooth user experiences. Driven to solve challenges in mobile technology and
+            contribute to successful app projects.
+        </p>
+      </section>
+
+      <section id="skills" class="section">
+        <p class="section-label">Skills</p>
+        <ul>
+          <li>Proficient in Swift, SwiftUI, UIKit, GCD</li>
+          <li>Experience with MVVM, Composable Architecture</li>
+          <li>Performance optimization</li>
+          <li>Pixel perfect UI &amp; animations</li>
+          <li>Working well as part of a team in a fast-paced environment</li>
+          <li>Communication and organisational skills</li>
+          <li>Effective collaboration with design and backend teams</li>
+        </ul>
+      </section>
+
+      <section id="experience" class="section">
+        <p class="section-label">Experience</p>
+        <h3>iOS Software Engineer - Desquared (2020 - Present)</h3>
+        <ul>
+          <li>Developed the myHERON mobile app from scratch.</li>
+          <li>Led iOS development for the BOX food delivery app, defining work items and establishing the technical roadmap.</li>
+          <li>Contributed features to What's Up, My Cosmote apps and Cosmote ID SDK.</li>
+        </ul>
+      </section>
+
+      <section id="projects" class="section">
+        <p class="section-label">Projects</p>
+
+        <article class="project-item">
+          <h3>BOX</h3>
+          <div class="project-meta">
+            <div>
+              <p class="meta-label">Role</p>
+              <p>iOS Software Engineer</p>
+              <p class="muted">Desquared</p>
+            </div>
+            <div>
+              <p class="meta-label">Technologies</p>
+              <ul class="project-tech">
+                <li>iOS</li>
+                <li>SwiftUI · UIKit</li>
+                <li>Kotlin Multiplatform</li>
+                <li>Realm</li>
+                <li>Firebase &amp; Adjust Analytics</li>
+                <li>Bitrise Builds</li>
+              </ul>
+            </div>
+          </div>
+          <a href="https://apps.apple.com/gr/app/box/id1479674149" class="app-store-button" target="_blank" rel="noopener noreferrer">
+            <img src="images/app_store_light.svg" alt="Download on the App Store" class="app-store-light">
+            <img src="images/app_store_dark.svg" alt="Download on the App Store" class="app-store-dark">
+          </a>
+        </article>
+
+        <article class="project-item">
+          <h3>myHERON</h3>
+          <div class="project-meta">
+            <div>
+              <p class="meta-label">Role</p>
+              <p>iOS Software Engineer</p>
+              <p class="muted">Desquared</p>
+            </div>
+            <div>
+              <p class="meta-label">Technologies</p>
+              <ul class="project-tech">
+                <li>iOS</li>
+                <li>UIKit</li>
+                <li>Firebase Analytics</li>
+                <li>AppCenter Builds</li>
+              </ul>
+            </div>
+          </div>
+          <a href="https://apps.apple.com/gr/app/my%CE%B7%CF%81%CF%89%CE%BD/id1540732737" class="app-store-button" target="_blank" rel="noopener noreferrer">
+            <img src="images/app_store_light.svg" alt="Download on the App Store" class="app-store-light">
+            <img src="images/app_store_dark.svg" alt="Download on the App Store" class="app-store-dark">
+          </a>
+        </article>
+      </section>
+
+      <section id="education" class="section">
+        <p class="section-label">Education</p>
+        <h3>BSc, Informatics <span class="muted">2017 – 2023</span></h3>
+        <p>Athens University of Economics and Business</p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="currentYear"></span> Konstantinos Kolioulis</p>
+    </footer>
+  </div>
+
+  <script>
+    const yearEl = document.getElementById('currentYear');
+    if (yearEl) {
+      yearEl.textContent = new Date().getFullYear();
+    }
+  </script>
+</body>
+</html>
