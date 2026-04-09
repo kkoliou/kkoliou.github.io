@@ -61,6 +61,7 @@ a:hover {
   flex-wrap: nowrap;
   align-items: flex-end;
   gap: 24px;
+  justify-content: space-between;
 }
 
 .site-header h1 {
@@ -83,7 +84,6 @@ a:hover {
   gap: 18px;
   list-style: decimal;
   margin: 0;
-  margin-left: auto;
   padding-left: 0.8rem;
   color: var(--muted);
   font-size: 0.98rem;
@@ -272,3 +272,75 @@ section p + ul {
     padding-left: 0;
   }
 }
+
+/* Blog and post styles */
+.blog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.post-item {
+  border-top: 1px solid var(--border);
+  padding: 16px 0;
+}
+
+.post-item h3 {
+  margin: 0 0 6px;
+}
+
+.post-meta {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin: 6px 0 10px;
+}
+
+.post {
+  max-width: 740px;
+}
+
+.post-content h3 { margin-top: 18px; }
+
+/* Code blocks */
+pre {
+  background: linear-gradient(180deg, rgba(0,0,0,0.02), transparent);
+  border: 1px solid var(--border);
+  padding: 14px;
+  border-radius: 8px;
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+code { white-space: pre; }
+
+.language-swift { }
+
+/* Prism token color overrides to feel closer to Xcode Swift colors */
+.token.keyword {
+  color: #0a5fff; /* bright blue */
+  font-weight: 600;
+}
+.token.function {
+  color: #8b00ff; /* purple */
+}
+.token.class-name,
+.token.type,
+.token.important {
+  color: #6f4df5;
+}
+.token.string {
+  color: #0b8a3e; /* green */
+}
+.token.number {
+  color: #b0450b; /* orange/brown */
+}
+.token.comment {
+  color: rgba(255,255,255,0.45);
+}
+
+@media (prefers-color-scheme: light) {
+  .token.comment { color: rgba(24,24,23,0.45); }
+}
+

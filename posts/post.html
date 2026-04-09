@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Post</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <h1>Konstantinos Kolioulis</h1>
+      <nav class="site-navs">
+        <ol class="site-nav">
+          <li><a href="../blog.html">blog</a></li>
+          <li><a href="../portfolio.html">portfolio</a></li>
+        </ol>
+      </nav>
+    </header>
+
+    <main>
+      <article class="section post">
+        <p class="section-label">Post</p>
+        <h2 id="post-title">Loading…</h2>
+        <p class="post-meta" id="post-meta"></p>
+        <div class="post-content">Loading post…</div>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="currentYear"></span> Konstantinos Kolioulis</p>
+    </footer>
+  </div>
+
+  <script>
+    const yearEl = document.getElementById('currentYear');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-swift.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/5.0.2/marked.min.js" crossorigin="anonymous"></script>
+
+  <script>
+    function getSlug() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('slug')) return params.get('slug');
+      if (location.hash) return location.hash.replace(/^#/, '');
+      // fallback: try to infer from path like /posts/slug/
+      const parts = location.pathname.split('/').filter(Boolean);
+      const idx = parts.indexOf('posts');
+      if (idx >= 0 && parts.length > idx + 1) return parts[idx + 1];
+      return null;
+    }
+
+    async function loadPost() {
+      const slug = getSlug();
+      const titleEl = document.getElementById('post-title');
+      const metaEl = document.getElementById('post-meta');
+      const container = document.querySelector('.post-content');
+      if (!slug) {
+        titleEl.textContent = 'Post not specified';
+        container.innerHTML = '<p>No post slug provided.</p>';
+        return;
+      }
+      const mdUrl = `${slug}/index.md`;
+      try {
+        const res = await fetch(mdUrl);
+        if (!res.ok) throw new Error(res.statusText);
+        const md = await res.text();
+        // try to extract frontmatter title/date for UI
+        const fm = md.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
+        if (fm) {
+          const body = fm[1];
+          const t = body.match(/^title:\s*["']?(.*?)["']?\s*$/im);
+          const d = body.match(/^date:\s*["']?(.*?)["']?\s*$/im);
+          if (t) titleEl.textContent = t[1];
+          if (d) metaEl.textContent = d[1];
+        }
+        // render markdown
+        container.innerHTML = marked.parse(md);
+        Prism.highlightAll();
+      } catch (err) {
+        titleEl.textContent = 'Failed to load post';
+        container.innerHTML = `<p>Error: ${err.message}</p>`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPost);
+  </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Konstantinos Kolioulis — Blog</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Prism.js theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" integrity="" crossorigin="anonymous" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <h1>Konstantinos Kolioulis</h1>
+      <nav class="site-navs">
+        <ol class="site-nav">
+          <li><a href="blog.html">blog</a></li>
+          <li><a href="portfolio.html">portfolio</a></li>
+        </ol>
+      </nav>
+    </header>
+
+    <main>
+      <section class="section">
+        <p class="section-label">Blog</p>
+
+        <div class="blog-list" id="blog-list">
+          <p>Loading posts…</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="currentYear"></span> Konstantinos Kolioulis</p>
+    </footer>
+  </div>
+
+  <script>
+    const yearEl = document.getElementById('currentYear');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+  </script>
+  <script>
+    // Fetch generated posts index (run scripts/generate_posts_index.py to update)
+    async function renderBlogList() {
+      const container = document.getElementById('blog-list');
+      try {
+        const res = await fetch('posts/index.json');
+        if (!res.ok) throw new Error(res.statusText);
+        const posts = await res.json();
+        if (!posts.length) { container.innerHTML = '<p>No posts yet.</p>'; return; }
+        container.innerHTML = '';
+        posts.forEach(p => {
+          const art = document.createElement('article');
+          art.className = 'post-item';
+          const h3 = document.createElement('h3');
+          const a = document.createElement('a');
+          // link to the reusable post template with slug param
+          a.href = `posts/post.html?slug=${encodeURIComponent(p.slug)}`;
+          a.textContent = p.title || p.slug;
+          h3.appendChild(a);
+          const meta = document.createElement('p'); meta.className = 'post-meta';
+          meta.textContent = p.date ? p.date : '—';
+          const ex = document.createElement('p'); ex.textContent = p.excerpt || '';
+          art.appendChild(h3);
+          art.appendChild(meta);
+          art.appendChild(ex);
+          container.appendChild(art);
+        });
+      } catch (err) {
+        container.innerHTML = `<p>Failed to load posts index: ${err.message}</p>`;
+      }
+    }
+    document.addEventListener('DOMContentLoaded', renderBlogList);
+  </script>
+  <!-- Prism.js core + Swift language -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-swift.min.js" integrity="" crossorigin="anonymous"></script>
+</body>
+</html>
