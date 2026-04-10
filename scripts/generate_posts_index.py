@@ -8,47 +8,40 @@ Run: python3 scripts/generate_posts_index.py
 import os
 import json
 import re
+from datetime import datetime
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 POSTS_DIR = os.path.join(ROOT, 'posts')
 OUT_FILE = os.path.join(POSTS_DIR, 'index.json')
 
-FRONTMATTER_RE = re.compile(r'^---\s*\n(.*?)\n---\s*\n', re.S)
-TITLE_RE = re.compile(r'^title:\s*["\']?(.*?)["\']?\s*$', re.I | re.M)
-DATE_RE = re.compile(r'^date:\s*["\']?(.*?)["\']?\s*$', re.I | re.M)
+FRONTMATTER_YAML_RE = re.compile(r'^---\s*\n([\s\S]*?)\n---\s*\n', re.M)
+FRONTMATTER_COMMENT_YAML_RE = re.compile(r'^<!--\s*---\s*\n([\s\S]*?)\n---\s*-->\s*\n', re.M)
 
 
 def extract_frontmatter(md_text):
-    m = FRONTMATTER_RE.match(md_text)
+    """Return (meta_dict, stripped_markdown_text).
+
+    Accepts YAML frontmatter at top or YAML wrapped inside an HTML comment.
+    """
+    m = FRONTMATTER_YAML_RE.match(md_text)
     if not m:
-        return {}
-    body = m.group(1)
-    title = None
-    date = None
-    tm = TITLE_RE.search(body)
-    if tm:
-        title = tm.group(1).strip()
-    dm = DATE_RE.search(body)
-    if dm:
-        date = dm.group(1).strip()
-    return {'title': title, 'date': date}
+        m = FRONTMATTER_COMMENT_YAML_RE.match(md_text)
+    if not m:
+        return {}, md_text
+    fm_text = m.group(1)
+    meta = {}
+    for line in fm_text.splitlines():
+        line = line.strip()
+        if not line or ':' not in line:
+            continue
+        k, v = line.split(':', 1)
+        meta[k.strip()] = v.strip().strip('\'"')
+    stripped = md_text[len(m.group(0)):]
+    return meta, stripped
 
 
-def extract_excerpt_from_markdown(md_text):
-    # remove frontmatter if present
-    md = FRONTMATTER_RE.sub('', md_text, count=1)
-    # find first non-empty paragraph
-    parts = re.split(r'\n\s*\n', md)
-    for p in parts:
-        s = p.strip()
-        if s:
-            # strip code fences
-            if s.startswith('```'):
-                continue
-            # return first line truncated
-            line = s.splitlines()[0]
-            return line[:200]
-    return ''
+# summary is taken from frontmatter `summary` field; no excerpt logic needed
+
 
 
 def scan_posts():
@@ -65,14 +58,33 @@ def scan_posts():
         title = None
         date = None
         excerpt = ''
+        summary = ''
+        tags = []
         url = os.path.join('posts', name, '')
         if os.path.isfile(md_file):
             with open(md_file, 'r', encoding='utf-8') as f:
                 text = f.read()
-            fm = extract_frontmatter(text)
-            title = fm.get('title')
-            date = fm.get('date')
-            excerpt = extract_excerpt_from_markdown(text)
+            meta, _ = extract_frontmatter(text)
+            title = meta.get('title')
+            date = meta.get('date')
+            # tags may be a comma-separated string or a YAML-like list
+            raw_tags = meta.get('tags')
+            if raw_tags:
+                # handle inline list like [a, b]
+                rt = raw_tags.strip()
+                if rt.startswith('[') and rt.endswith(']'):
+                    rt = rt[1:-1]
+                # split on commas
+                tags = [t.strip().strip('\"\'') for t in re.split(r',\s*', rt) if t.strip()]
+            else:
+                # try to detect YAML block list inside frontmatter (lines starting with - )
+                m_block = re.search(r'(^|\n)tags:\s*\n([\s\S]*?)(\n\S|$)', text)
+                if m_block:
+                    block = m_block.group(2)
+                    items = re.findall(r'-\s*(.+)', block)
+                    tags = [t.strip().strip('\"\'') for t in items if t.strip()]
+            # prefer explicit `summary` in frontmatter
+            summary = meta.get('summary', '').strip()
         elif os.path.isfile(html_file):
             with open(html_file, 'r', encoding='utf-8') as f:
                 text = f.read()
@@ -80,13 +92,27 @@ def scan_posts():
             t = re.search(r'<title>(.*?)</title>', text, re.I | re.S)
             if t:
                 title = t.group(1).strip()
-            # extract first paragraph
-            p = re.search(r'<p>(.*?)</p>', text, re.I | re.S)
-            if p:
-                excerpt = re.sub(r'<.*?>', '', p.group(1)).strip()[:200]
+            # prefer explicit `summary` in frontmatter for HTML posts too
+            meta_html = {}
+            tmeta = re.search(r'<meta name="summary" content="(.*?)"', text, re.I | re.S)
+            if tmeta:
+                summary = tmeta.group(1).strip()
         if not title:
             title = name
-        posts.append({'slug': name, 'title': title, 'date': date, 'excerpt': excerpt, 'url': url})
+        posts.append({'slug': name, 'title': title, 'date': date, 'tags': tags, 'summary': summary, 'url': url})
+
+    # sort posts by date (newest first). If date missing or unparsable, treat as oldest.
+    def parse_date(d):
+        if not d:
+            return datetime.min
+        for fmt in ('%Y-%m-%d', '%Y-%m-%dT%H:%M:%S'):
+            try:
+                return datetime.strptime(d, fmt)
+            except Exception:
+                continue
+        return datetime.min
+
+    posts.sort(key=lambda p: parse_date(p.get('date')), reverse=True)
     return posts
 
 

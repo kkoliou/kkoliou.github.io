@@ -1,0 +1,6 @@
+---
+title: "Dynamic Type Scaling in SwiftUI Components"
+date: 2026-04-10
+tags: [SwiftUI, Accessibility]
+summary: "How to scale non-text components for Dynamic Type in SwiftUI."
+---

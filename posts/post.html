@@ -56,12 +56,48 @@
 
     async function loadPost() {
       const slug = getSlug();
+      const params = new URLSearchParams(window.location.search);
+      const titleParam = params.get('title');
       const titleEl = document.getElementById('post-title');
-      const metaEl = document.getElementById('post-meta');
+        const metaEl = document.getElementById('post-meta');
+      
+      // create a tags container under the header area (will be populated if tags exist)
+      function renderTagsList(tagsArray) {
+        if (!tagsArray || !tagsArray.length) return null;
+        const wrap = document.createElement('div');
+        wrap.className = 'post-tags';
+        tagsArray.forEach(t => {
+          const span = document.createElement('span');
+          span.className = 'tag';
+          span.textContent = t;
+          wrap.appendChild(span);
+        });
+        return wrap;
+      }
       const container = document.querySelector('.post-content');
+      // prefer sessionStorage (set by the blog list click handler) to avoid exposing the title in the URL
+      let usedTitle = null;
+      if (slug) {
+        try {
+          const cached = sessionStorage.getItem('postTitle:' + slug);
+          if (cached) {
+            usedTitle = cached;
+            sessionStorage.removeItem('postTitle:' + slug);
+          }
+        } catch (e) {
+          // ignore storage errors
+        }
+      }
+      // fallback to title query param if no cached title
+      if (!usedTitle && titleParam) usedTitle = titleParam;
+      if (usedTitle) {
+        titleEl.textContent = usedTitle;
+        document.title = `${usedTitle} — Konstantinos Kolioulis`;
+      }
       if (!slug) {
         titleEl.textContent = 'Post not specified';
         container.innerHTML = '<p>No post slug provided.</p>';
+        document.title = 'Post not specified — Konstantinos Kolioulis';
         return;
       }
       const mdUrl = `${slug}/index.md`;
@@ -69,21 +105,66 @@
         const res = await fetch(mdUrl);
         if (!res.ok) throw new Error(res.statusText);
         const md = await res.text();
-        // try to extract frontmatter title/date for UI
-        const fm = md.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
+        // try to extract frontmatter title/date for UI (supports plain YAML or YAML wrapped in an HTML comment)
+        const YAML_FM_RE = /^---\s*\n([\s\S]*?)\n---\s*\n/;
+        const COMMENT_YAML_FM_RE = /^<!--\s*---\s*\n([\s\S]*?)\n---\s*-->\s*\n/;
+
+        let mdText = md;
+        let fm = mdText.match(YAML_FM_RE);
+        if (!fm) fm = mdText.match(COMMENT_YAML_FM_RE);
+
         if (fm) {
           const body = fm[1];
-          const t = body.match(/^title:\s*["']?(.*?)["']?\s*$/im);
-          const d = body.match(/^date:\s*["']?(.*?)["']?\s*$/im);
+          const t = body.match(/^title:\s*["']?(.*?)['"]?\s*$/im);
+          const d = body.match(/^date:\s*["']?(.*?)['"]?\s*$/im);
+          const tagsMatch = body.match(/^tags:\s*(?:\[(.*?)\]|(.*?))\s*$/im);
+          let tags = [];
+          if (tagsMatch) {
+            const raw = (tagsMatch[1] || tagsMatch[2] || '').trim();
+            if (raw.includes(',')) {
+              tags = raw.split(',').map(s => s.trim()).filter(Boolean);
+            } else if (raw) {
+              // maybe YAML list style below; try to parse subsequent lines
+              const after = mdText.slice(mdText.indexOf(fm[0]) > -1 ? mdText.indexOf(fm[0]) : 0);
+              const listMatch = body.match(/\n\s*-\s*(.+)/g);
+              if (listMatch) tags = listMatch.map(l => l.replace(/^\n?\s*-\s*/, '').trim());
+              else if (raw) tags = [raw];
+            }
+          }
           if (t) titleEl.textContent = t[1];
           if (d) metaEl.textContent = d[1];
+          document.title = `${titleEl.textContent} — Konstantinos Kolioulis`;
+          // strip the matched frontmatter block from the markdown before rendering
+          mdText = mdText.replace(fm[0], '');
+
+          // render tags under the meta (and insert a divider)
+          const headerArea = titleEl.parentElement;
+          // remove existing tags/divider if any
+          const existingTags = headerArea.querySelector('.post-tags');
+          if (existingTags) existingTags.remove();
+          const existingDivider = headerArea.querySelector('.post-divider');
+          if (existingDivider) existingDivider.remove();
+          const tagsNode = renderTagsList(tags);
+          if (tagsNode) {
+            headerArea.insertBefore(tagsNode, container);
+          }
+          // divider
+          const hr = document.createElement('div'); hr.className = 'post-divider';
+          headerArea.insertBefore(hr, container);
         }
-        // render markdown
-        container.innerHTML = marked.parse(md);
+        
+        // render markdown (use stripped mdText so frontmatter never appears in output)
+        container.innerHTML = marked.parse(mdText);
         Prism.highlightAll();
+        // if frontmatter was missing, try to set title from first H1 in rendered content
+        if (!fm) {
+          const h1 = container.querySelector('h1');
+          if (h1 && h1.textContent) document.title = `${h1.textContent} — Konstantinos Kolioulis`;
+        }
       } catch (err) {
         titleEl.textContent = 'Failed to load post';
         container.innerHTML = `<p>Error: ${err.message}</p>`;
+        document.title = `Failed to load post — Konstantinos Kolioulis`;
       }
     }
 
