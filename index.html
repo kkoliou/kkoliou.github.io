@@ -54,15 +54,32 @@
           art.className = 'post-item';
           const h3 = document.createElement('h3');
           const a = document.createElement('a');
-          // link to the reusable post template with slug param
+          // link to the reusable post template with slug and optional title param
           a.href = `posts/post.html?slug=${encodeURIComponent(p.slug)}`;
+          // store title in sessionStorage on click so the post page can read it without using the URL
+          a.addEventListener('click', () => {
+            try {
+              if (p.title) sessionStorage.setItem('postTitle:' + p.slug, p.title);
+            } catch (e) {
+              /* ignore storage errors */
+            }
+          });
           a.textContent = p.title || p.slug;
           h3.appendChild(a);
           const meta = document.createElement('p'); meta.className = 'post-meta';
           meta.textContent = p.date ? p.date : '—';
-          const ex = document.createElement('p'); ex.textContent = p.excerpt || '';
+          const ex = document.createElement('p'); ex.className = 'post-summary'; ex.textContent = p.summary || '';
           art.appendChild(h3);
           art.appendChild(meta);
+          // render tags below meta if present
+          if (p.tags && p.tags.length) {
+            const tagsWrap = document.createElement('div');
+            tagsWrap.className = 'post-tags';
+            p.tags.forEach(t => {
+              const span = document.createElement('span'); span.className = 'tag'; span.textContent = t; tagsWrap.appendChild(span);
+            });
+            art.appendChild(tagsWrap);
+          }
           art.appendChild(ex);
           container.appendChild(art);
         });
