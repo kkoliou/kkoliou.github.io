@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Scan the `posts/` folder for post directories containing `index.md` or `index.html`.
-Extract basic metadata (title, date, excerpt) and write `posts/index.json`.
+Scan the `posts/` folder for post directories containing `index.html` or `index.md`.
+If both exist, `index.html` is used (static posts are the source of truth).
 
 Run: python3 scripts/generate_posts_index.py
 """
@@ -43,6 +43,51 @@ def extract_frontmatter(md_text):
 # summary is taken from frontmatter `summary` field; no excerpt logic needed
 
 
+def strip_site_title_suffix(title):
+    if not title:
+        return title
+    return re.sub(r'\s*[—–-]\s*Konstantinos Kolioulis\s*$', '', title, flags=re.I).strip()
+
+
+def parse_html_post_meta(html_text):
+    """Read optional <meta> fields used for the blog index."""
+    meta = {'title': None, 'date': None, 'tags': [], 'summary': ''}
+    t = re.search(r'<title>(.*?)</title>', html_text, re.I | re.S)
+    if t:
+        meta['title'] = strip_site_title_suffix(t.group(1).strip())
+    for name, key in (('date', 'date'), ('tags', '_tags_raw'), ('summary', 'summary')):
+        m = re.search(
+            rf'<meta\s+[^>]*name=["\']{name}["\'][^>]*content=["\']([^"\']*)["\']',
+            html_text,
+            re.I,
+        )
+        if not m:
+            m = re.search(
+                rf'<meta\s+[^>]*content=["\']([^"\']*)["\'][^>]*name=["\']{name}["\']',
+                html_text,
+                re.I,
+            )
+        if m and key != '_tags_raw':
+            meta[key] = m.group(1).strip()
+        elif m and key == '_tags_raw':
+            raw = m.group(1).strip()
+            meta['tags'] = [x.strip().strip('\'"') for x in re.split(r',\s*', raw) if x.strip()]
+    if not meta.get('summary'):
+        m = re.search(
+            r'<meta\s+[^>]*name=["\']description["\'][^>]*content=["\']([^"\']*)["\']',
+            html_text,
+            re.I,
+        )
+        if not m:
+            m = re.search(
+                r'<meta\s+[^>]*content=["\']([^"\']*)["\'][^>]*name=["\']description["\']',
+                html_text,
+                re.I,
+            )
+        if m:
+            meta['summary'] = m.group(1).strip()
+    return meta
+
 
 def scan_posts():
     posts = []
@@ -52,7 +97,6 @@ def scan_posts():
         post_path = os.path.join(POSTS_DIR, name)
         if not os.path.isdir(post_path):
             continue
-        # look for index.md or index.html
         md_file = os.path.join(post_path, 'index.md')
         html_file = os.path.join(post_path, 'index.html')
         title = None
@@ -60,8 +104,18 @@ def scan_posts():
         excerpt = ''
         summary = ''
         tags = []
-        url = os.path.join('posts', name, '')
-        if os.path.isfile(md_file):
+        url = f'posts/{name}/'
+        has_md = os.path.isfile(md_file)
+        has_html = os.path.isfile(html_file)
+        if has_html:
+            with open(html_file, 'r', encoding='utf-8') as f:
+                text = f.read()
+            hm = parse_html_post_meta(text)
+            title = hm.get('title')
+            date = hm.get('date')
+            tags = hm.get('tags') or []
+            summary = hm.get('summary') or ''
+        elif has_md:
             with open(md_file, 'r', encoding='utf-8') as f:
                 text = f.read()
             meta, _ = extract_frontmatter(text)
@@ -85,18 +139,8 @@ def scan_posts():
                     tags = [t.strip().strip('\"\'') for t in items if t.strip()]
             # prefer explicit `summary` in frontmatter
             summary = meta.get('summary', '').strip()
-        elif os.path.isfile(html_file):
-            with open(html_file, 'r', encoding='utf-8') as f:
-                text = f.read()
-            # try to extract <title> tag
-            t = re.search(r'<title>(.*?)</title>', text, re.I | re.S)
-            if t:
-                title = t.group(1).strip()
-            # prefer explicit `summary` in frontmatter for HTML posts too
-            meta_html = {}
-            tmeta = re.search(r'<meta name="summary" content="(.*?)"', text, re.I | re.S)
-            if tmeta:
-                summary = tmeta.group(1).strip()
+        else:
+            continue
         if not title:
             title = name
         posts.append({'slug': name, 'title': title, 'date': date, 'tags': tags, 'summary': summary, 'url': url})

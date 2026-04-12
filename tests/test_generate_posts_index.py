@@ -68,3 +68,27 @@ def test_html_meta_summary(tmp_path):
     gen.POSTS_DIR = str(root)
     posts = gen.scan_posts()
     assert any(p['summary'] == 'Html summary' for p in posts)
+
+
+def test_html_prefers_over_md(tmp_path):
+    root = tmp_path / 'posts'
+    d = root / 'both'
+    os.makedirs(str(d), exist_ok=True)
+    fm = '---\ntitle: From Markdown\ndate: 2026-01-01\n---\n'
+    write_md(str(d), fm)
+    html = (
+        '<html><head><title>From HTML — Konstantinos Kolioulis</title>'
+        '<meta name="date" content="2026-06-01" />'
+        '<meta name="tags" content="a, b" />'
+        '<meta name="description" content="D1" />'
+        '</head><body></body></html>'
+    )
+    with open(os.path.join(str(d), 'index.html'), 'w', encoding='utf-8') as f:
+        f.write(html)
+    gen.POSTS_DIR = str(root)
+    posts = gen.scan_posts()
+    assert len(posts) == 1
+    assert posts[0]['title'] == 'From HTML'
+    assert posts[0]['date'] == '2026-06-01'
+    assert posts[0]['tags'] == ['a', 'b']
+    assert posts[0]['summary'] == 'D1'

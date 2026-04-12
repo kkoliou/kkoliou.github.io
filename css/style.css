@@ -374,8 +374,6 @@ pre {
 
 code { white-space: pre; }
 
-.language-swift { }
-
 /* Prism token color overrides to feel closer to Xcode Swift colors */
 .token.keyword {
   color: #0a5fff; /* bright blue */

@@ -54,16 +54,7 @@
           art.className = 'post-item';
           const h3 = document.createElement('h3');
           const a = document.createElement('a');
-          // link to the reusable post template with slug and optional title param
-          a.href = `posts/post.html?slug=${encodeURIComponent(p.slug)}`;
-          // store title in sessionStorage on click so the post page can read it without using the URL
-          a.addEventListener('click', () => {
-            try {
-              if (p.title) sessionStorage.setItem('postTitle:' + p.slug, p.title);
-            } catch (e) {
-              /* ignore storage errors */
-            }
-          });
+          a.href = p.url || ('posts/' + encodeURIComponent(p.slug) + '/');
           a.textContent = p.title || p.slug;
           h3.appendChild(a);
           const meta = document.createElement('p'); meta.className = 'post-meta';

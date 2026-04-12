@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="date" content="2026-04-10" />
+  <meta name="tags" content="SwiftUI, Accessibility, Performance" />
+  <meta name="description" content="Ensure smooth scrolling and consistent layouts in SwiftUI lazy stacks by using Dynamic Type–scaled fixed sizes instead of relying on intrinsic content height." />
+  <title>Dynamic Type Scaling in SwiftUI Components — Konstantinos Kolioulis</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <h1>Konstantinos Kolioulis</h1>
+      <nav class="site-navs">
+        <ol class="site-nav">
+          <li><a href="../../index.html">blog</a></li>
+          <li><a href="../../portfolio.html">portfolio</a></li>
+        </ol>
+      </nav>
+    </header>
+
+    <main>
+      <article class="section post">
+        <h2>Dynamic Type Scaling in SwiftUI Components</h2>
+        <p class="post-meta">2026-04-10</p>
+        <div class="post-tags">
+          <span class="tag">SwiftUI</span>
+          <span class="tag">Accessibility</span>
+          <span class="tag">Performance</span>
+        </div>
+        <div class="post-divider"></div>
+        <div class="post-content">
+          <p><a href="https://developer.apple.com/documentation/swiftui/creating-performant-scrollable-stacks" target="_blank" rel="noopener noreferrer">Apple recommends</a> <code>LazyHStack</code> and <code>LazyVStack</code> so only visible items are laid out. For carousels, this works when each cell has a <strong>stable size</strong>. If height is determined only by content (wrapping text, mixed subviews), <strong>sections disagree</strong>, and you might see different row heights, clipping, or jumps as cells recycle.</p>
+
+          <h2>Problem: lazy + intrinsically sized cells</h2>
+
+          <pre><code class="language-swift">ScrollView(.horizontal, showsIndicators: false) {
+    LazyHStack(alignment: .top, spacing: 12) {
+        ForEach(items) { item in
+            StoreCard(item: item)
+        }
+    }
+}</code></pre>
+
+          <div class="post-media-pair">
+            <video controls>
+              <source src="assets/carousels%20with%20non%20fixed%20height.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <img src="assets/IMG_0687.PNG" alt="Section with the second card doesn't fit" />
+          </div>
+
+          <p>As you can see, each section has a different height, which is determined by the first element of each section. Also, there is a section in the screenshot where its height cuts off the second element.</p>
+
+          <h2>Solution: scaled fixed frame + dependency on <code>dynamicTypeSize</code></h2>
+
+          <p>Scale a base constant with <code>UIFontMetrics</code>, and read <code>dynamicTypeSize</code> so SwiftUI <strong>re-evaluates</strong> when the user changes text size.</p>
+
+          <pre><code class="language-swift">private struct CarouselCell: View {
+    let item: Item
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var rowHeight: CGFloat {
+        UIFontMetrics.default.scaledValue(for: 220)
+    }
+
+    var body: some View {
+        StoreCard(item: item)
+            .frame(width: 280, height: rowHeight)
+    }
+}</code></pre>
+
+          <p>We have to apply this pattern to images as well. Instead of using raw <code>24</code>, we use <code>UIFontMetrics.default.scaledValue(for: 24)</code>. This allows them to scale like fonts.</p>
+
+          <div class="post-media-pair">
+            <video controls>
+              <source src="assets/carousels%20with%20fixed%20height.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <video controls>
+              <source src="assets/scaling%20when%20font%20size%20changes.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+
+          <h2>LazyVStack performance</h2>
+
+          <p><code>LazyVStack</code> also wins when rows have a <strong>predictable height</strong>. If every row’s size is inferred by measuring deep, intrinsic content, the system does more layout work to draw the view and figure total height. This can lead to hangs or weird jumps while scrolling.</p>
+
+          <p>Giving each row a scaled height replaces the need to measure everything to discover height with a <strong>declared height for the current text setting</strong>. Thus, you remain compatible with the accessibility guidelines and increase the scrolling performance.</p>
+        </div>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="currentYear"></span> Konstantinos Kolioulis</p>
+    </footer>
+  </div>
+
+  <script>
+    const yearEl = document.getElementById('currentYear');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-swift.min.js" crossorigin="anonymous"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.Prism) Prism.highlightAll();
+    });
+  </script>
+</body>
+</html>
