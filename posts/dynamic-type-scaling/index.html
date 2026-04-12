@@ -59,7 +59,7 @@
 
           <p>Scale a base constant with <code>UIFontMetrics</code>, and read <code>dynamicTypeSize</code> so SwiftUI <strong>re-evaluates</strong> when the user changes text size.</p>
 
-          <pre><code class="language-swift">private struct CarouselCell: View {
+          <pre><code class="language-swift">struct CarouselCell: View {
     let item: Item
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
