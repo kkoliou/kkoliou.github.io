@@ -170,5 +170,29 @@
 
     document.addEventListener('DOMContentLoaded', loadPost);
   </script>
+  <script>
+    // Ensure external links in post content open in a new tab for safety/usability
+    document.addEventListener('DOMContentLoaded', () => {
+      // run after markdown is rendered by loadPost
+      const observer = new MutationObserver(() => {
+        const container = document.querySelector('.post-content');
+        if (!container) return;
+        const links = container.querySelectorAll('a[href]');
+        if (!links.length) return;
+        links.forEach(a => {
+          try {
+            const href = a.getAttribute('href');
+            // treat absolute http(s) links as external
+            if (/^https?:\/\//i.test(href)) {
+              a.setAttribute('target', '_blank');
+              a.setAttribute('rel', 'noopener noreferrer');
+            }
+          } catch (e) {}
+        });
+        observer.disconnect(); // done
+      });
+      observer.observe(document.querySelector('.post-content') || document.body, { childList: true, subtree: true });
+    });
+  </script>
 </body>
 </html>

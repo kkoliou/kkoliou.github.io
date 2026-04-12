@@ -5,9 +5,10 @@
     "date": "2026-04-10",
     "tags": [
       "SwiftUI",
-      "Accessibility"
+      "Accessibility",
+      "Performance"
     ],
-    "summary": "How to scale non-text components for Dynamic Type in SwiftUI.",
+    "summary": "Ensure smooth scrolling and consistent layouts in SwiftUI lazy stacks by using Dynamic Type–scaled fixed sizes instead of relying on intrinsic content height.",
     "url": "posts/dynamic-type-scaling/"
   }
 ]
