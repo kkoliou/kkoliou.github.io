@@ -104,7 +104,7 @@ def scan_posts():
         excerpt = ''
         summary = ''
         tags = []
-        url = f'posts/{name}/'
+        url = f'posts/{name}/index.html'
         has_md = os.path.isfile(md_file)
         has_html = os.path.isfile(html_file)
         if has_html:

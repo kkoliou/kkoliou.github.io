@@ -54,7 +54,7 @@
           art.className = 'post-item';
           const h3 = document.createElement('h3');
           const a = document.createElement('a');
-          a.href = p.url || ('posts/' + encodeURIComponent(p.slug) + '/');
+          a.href = p.url || ('posts/' + encodeURIComponent(p.slug) + '/index.html');
           a.textContent = p.title || p.slug;
           h3.appendChild(a);
           const meta = document.createElement('p'); meta.className = 'post-meta';
