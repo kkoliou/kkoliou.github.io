@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="date" content="2026-07-04" />
+  <meta name="tags" content="iOS, SwiftUI, App Store" />
+  <meta name="description" content="Vocabulary is a simple, on-device flashcard app for practicing and remembering new words." />
+  <title>Vocabulary — A Words Practice App — Konstantinos Kolioulis</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    /* Vocabulary app theme, scoped to this page. Mirrors AppColors.swift (accent #A92325 / accentLight #ECC0C1)
+       and AppTypography.swift's rounded design, layered on top of the site's shared post styles. */
+    .vocab-support {
+      --vocab-accent: #a92325;
+      --vocab-accent-light: #ecc0c1;
+      --vocab-rounded: ui-rounded, "SF Pro Rounded", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* .page-shell is a column flex container, so `main` is a flex item: without this,
+       the horizontally-scrolling gallery below makes `main` (and the whole page) as
+       wide as the unscrolled gallery instead of clipping to the viewport. */
+    main { min-width: 0; }
+
+    .vocab-hero {
+      background: radial-gradient(120% 140% at 15% 0%, rgba(169, 35, 37, 0.4), transparent 60%), #070707;
+      border-radius: 24px;
+      padding: 44px 30px;
+      margin: 24px 0 36px;
+    }
+    .vocab-kicker {
+      font-family: var(--vocab-rounded);
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      font-size: 0.72rem;
+      color: var(--vocab-accent-light);
+      margin: 0 0 14px;
+    }
+    .vocab-hero-title {
+      font-family: var(--vocab-rounded);
+      font-weight: 800;
+      font-size: clamp(1.9rem, 5vw, 2.6rem);
+      line-height: 1.12;
+      margin: 0 0 16px;
+      color: #fdfdfd;
+    }
+    .vocab-hero-sub {
+      color: rgba(245, 244, 241, 0.75);
+      max-width: 460px;
+      margin: 0 0 28px;
+      font-size: 1.05rem;
+    }
+    .vocab-hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .vocab-support .vocab-btn {
+      font-family: var(--vocab-rounded);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--vocab-accent);
+      color: #fff;
+      font-weight: 700;
+      padding: 12px 22px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .vocab-support .vocab-btn:hover { color: #fff; opacity: 0.85; }
+    .vocab-support .vocab-btn-ghost {
+      background: rgba(245, 244, 241, 0.08);
+      border: 1px solid rgba(245, 244, 241, 0.18);
+      color: #f5f4f1;
+    }
+    .vocab-support .vocab-btn-ghost:hover { color: #f5f4f1; }
+
+    .vocab-gallery {
+      display: flex;
+      contain: inline-size;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 4px 4px 22px;
+      margin: 0 0 40px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .vocab-gallery img {
+      scroll-snap-align: center;
+      flex: 0 0 auto;
+      height: 440px;
+      width: auto;
+      border-radius: 26px;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+    }
+    @media (max-width: 640px) {
+      .vocab-gallery img { height: 340px; }
+      .vocab-hero { padding: 36px 22px; }
+    }
+
+    .vocab-support .post-content h3 {
+      font-family: var(--vocab-rounded);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .vocab-support .post-content h3::before {
+      content: "";
+      flex: 0 0 auto;
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: var(--vocab-accent);
+    }
+
+    .vocab-features {
+      list-style: none;
+      margin: 0 0 8px;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+    }
+    .vocab-features li {
+      padding-left: 22px;
+      position: relative;
+    }
+    .vocab-features li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.55em;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      background: var(--vocab-accent-light);
+    }
+
+    .vocab-faq details {
+      border-top: 1px solid var(--border);
+      padding: 16px 0;
+    }
+    .vocab-faq details:last-of-type { border-bottom: 1px solid var(--border); }
+    .vocab-faq summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .vocab-faq summary::-webkit-details-marker { display: none; }
+    .vocab-faq summary::after {
+      content: "+";
+      flex: 0 0 auto;
+      color: var(--vocab-accent);
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+    .vocab-faq details[open] summary::after { content: "–"; }
+    .vocab-faq details p,
+    .vocab-faq details ul {
+      color: var(--muted);
+      margin: 10px 0 0;
+    }
+    .vocab-faq code {
+      background: var(--tag-bg);
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-size: 0.9em;
+    }
+
+    .vocab-contact {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 24px 0 36px;
+      background: linear-gradient(180deg, rgba(169, 35, 37, 0.06), transparent);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <h1>Konstantinos Kolioulis</h1>
+      <nav class="site-navs">
+        <ol class="site-nav">
+          <li><a href="../../index.html">blog</a></li>
+          <li><a href="../../portfolio.html">portfolio</a></li>
+        </ol>
+      </nav>
+    </header>
+
+    <main>
+      <article class="section post vocab-support">
+        <h2>Vocabulary — A Words Practice App</h2>
+        <p class="post-meta">2026-07-04</p>
+        <div class="post-tags">
+          <span class="tag">iOS</span>
+          <span class="tag">SwiftUI</span>
+          <span class="tag">App Store</span>
+        </div>
+        <div class="post-divider"></div>
+        <div class="post-content">
+          <div class="vocab-hero">
+            <p class="vocab-kicker">Vocabulary</p>
+            <h2 class="vocab-hero-title">Practice smarter.<br />Not harder.</h2>
+            <p class="vocab-hero-sub">A simple, on-device flashcard app for building real bilingual vocabulary retention — no account, no sync, no ads.</p>
+            <div class="vocab-hero-actions">
+              <a class="vocab-btn" href="mailto:yourvocabularyapp@gmail.com?subject=Vocabulary%20App%20Support">Email support</a>
+              <a class="vocab-btn vocab-btn-ghost" href="#faq">Browse FAQ</a>
+            </div>
+          </div>
+
+          <div class="vocab-gallery">
+            <img src="assets/1-hero-practice.png" alt="Practice screen showing a stack of flashcards with a Reveal button" loading="lazy" />
+            <img src="assets/2-organize-lists.png" alt="Vocabulary Lists screen organized by week" loading="lazy" />
+            <img src="assets/3-bilingual-detail.png" alt="A vocabulary list with English words, Greek translations, and highlighted entries" loading="lazy" />
+            <img src="assets/4-practice-style.png" alt="Practice Style settings, choosing between Cards and Buttons" loading="lazy" />
+            <img src="assets/5-get-started.png" alt="Empty state with a Load vocabularies button to get started" loading="lazy" />
+          </div>
+
+          <h3>What Vocabulary does</h3>
+          <p>Vocabulary helps you learn new words with simple flashcard practice, built around a few focused ideas:</p>
+          <ul class="vocab-features">
+            <li>Organize words into lists (by week, topic, or however you like) and import them from a CSV file, or add entries by hand.</li>
+            <li>Flag the entries you find difficult and practice just your highlights until they stick.</li>
+            <li>Choose how cards are shown during practice — swipe through a stack, or step through with buttons.</li>
+            <li>Control how often the original word vs. the translation is hidden, with an optional auto-reveal.</li>
+            <li>Everything is stored on your device. There's no account and nothing is uploaded anywhere.</li>
+          </ul>
+
+          <h3>Need help?</h3>
+          <div class="vocab-contact">
+            <p>If something isn't working, or you just have a question about the app, email me directly and I'll get back to you personally.</p>
+            <p><a class="vocab-btn" href="mailto:yourvocabularyapp@gmail.com?subject=Vocabulary%20App%20Support">yourvocabularyapp@gmail.com</a></p>
+            <p class="muted">I read every message myself and try to reply within a couple of days.</p>
+          </div>
+
+          <h3 id="faq">Frequently asked questions</h3>
+          <div class="vocab-faq">
+            <details>
+              <summary>How do I add words to a vocabulary list?</summary>
+              <p>Open a list and tap the <strong>+</strong> button to add a single entry, or import a CSV file with many entries at once from the same menu.</p>
+            </details>
+            <details>
+              <summary>What CSV format does Vocabulary expect for imports?</summary>
+              <p>Each row needs two comma-separated columns: the original word first, then its translation, for example:</p>
+              <p><code>Refill,Ξαναγεμίζω</code></p>
+              <p>A header row is optional — if your first line contains "source" or "translated" it's automatically skipped. Fields containing commas can be wrapped in quotes.</p>
+            </details>
+            <details>
+              <summary>Is there a limit to how many words I can store?</summary>
+              <p>Each vocabulary list can hold up to 5,000 entries, and the app supports up to 50,000 entries in total across all your lists. If an import would go over either limit, you'll see a message telling you how many free slots are left.</p>
+            </details>
+            <details>
+              <summary>How do I flag words I find difficult?</summary>
+              <p>Swipe or tap the bookmark icon on an entry inside a list to highlight it. You can then filter or practice just your highlighted words until they stop giving you trouble.</p>
+            </details>
+            <details>
+              <summary>Can I change how flashcards are practiced?</summary>
+              <p>Yes — go to <strong>Settings → Practice Style</strong> and choose between <strong>Cards</strong> (swipe through a stack) or <strong>Buttons</strong> (step through with taps).</p>
+            </details>
+            <details>
+              <summary>Does Vocabulary need an internet connection or an account?</summary>
+              <p>No. Vocabulary works fully offline and doesn't require signing in. All of your lists and progress live only on your device.</p>
+            </details>
+            <details>
+              <summary>How do I change the app's language?</summary>
+              <p>Vocabulary follows your iPhone's language setting (currently available in English and Greek). Go to <strong>Settings → Language</strong> inside the app — this opens the iOS Settings app, where you can change the language for Vocabulary under its entry.</p>
+            </details>
+          </div>
+
+          <h3>Troubleshooting</h3>
+          <div class="vocab-faq">
+            <details>
+              <summary>My CSV import fails with a formatting error</summary>
+              <p>Make sure every row has at least two columns separated by a comma — the word and its translation. Rows with only one column, or empty fields, will be rejected. If a word itself contains a comma, wrap that field in double quotes.</p>
+            </details>
+            <details>
+              <summary>I got a message saying I've reached a word limit</summary>
+              <p>You've hit either the 5,000-entry limit for a single list or the 50,000-entry limit across the whole app. Try importing into a new list, or remove entries you no longer need to free up space.</p>
+            </details>
+          </div>
+
+          <p class="muted">Still stuck after checking the FAQ above? <a href="mailto:yourvocabularyapp@gmail.com?subject=Vocabulary%20App%20Support">Email me</a> and I'll help you sort it out.</p>
+        </div>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="currentYear"></span> Konstantinos Kolioulis</p>
+    </footer>
+  </div>
+
+  <script>
+    const yearEl = document.getElementById('currentYear');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

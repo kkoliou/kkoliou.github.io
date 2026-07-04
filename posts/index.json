@@ -1,5 +1,17 @@
 [
   {
+    "slug": "vocabulary-words-practice-app",
+    "title": "Vocabulary — A Words Practice App",
+    "date": "2026-07-04",
+    "tags": [
+      "iOS",
+      "SwiftUI",
+      "App Store"
+    ],
+    "summary": "Vocabulary is a simple, on-device flashcard app for practicing and remembering new words.",
+    "url": "posts/vocabulary-words-practice-app/index.html"
+  },
+  {
     "slug": "dynamic-type-scaling",
     "title": "Dynamic Type Scaling in SwiftUI Components",
     "date": "2026-04-10",
