@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Privacy policy for Vocabulary: the app stores everything locally on your device and does not collect, transmit, or share any personal data." />
+  <title>Vocabulary — Privacy Policy — Konstantinos Kolioulis</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* Same accent as the Vocabulary app (AppColors.swift: accent #A92325), used sparingly here —
+       this page prioritizes legibility over the marketing styling on the practice-app post. */
+    .vocab-privacy { --vocab-accent: #a92325; }
+    .vocab-privacy h3 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .vocab-privacy h3::before {
+      content: "";
+      flex: 0 0 auto;
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: var(--vocab-accent);
+    }
+    .vocab-privacy-updated {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: -10px 0 24px;
+    }
+    .vocab-privacy-contact {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 24px 0 8px;
+      background: linear-gradient(180deg, rgba(169, 35, 37, 0.06), transparent);
+    }
+    .vocab-privacy-contact a {
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <h1>Konstantinos Kolioulis</h1>
+      <nav class="site-navs">
+        <ol class="site-nav">
+          <li><a href="index.html">blog</a></li>
+          <li><a href="portfolio.html">portfolio</a></li>
+        </ol>
+      </nav>
+    </header>
+
+    <main>
+      <section class="section vocab-privacy">
+        <p class="section-label">Vocabulary</p>
+        <h2>Privacy Policy</h2>
+        <p class="vocab-privacy-updated">Effective date: July 5, 2026</p>
+
+        <p>Vocabulary is a flashcard app for practicing and remembering new words. This policy explains, in plain language, what happens to your data when you use it.</p>
+
+        <p><strong>In short: nothing you create in Vocabulary ever leaves your device.</strong> There are no accounts, no analytics, no ads, and no servers that Vocabulary talks to.</p>
+
+        <h3>What the app stores</h3>
+        <p>Vocabulary stores the following, entirely in a local database on your device:</p>
+        <ul>
+          <li>The vocabulary lists and word entries you create or import (original word, translation, and which list they belong to).</li>
+          <li>Words you've flagged as highlights, and your practice progress (e.g. which entries you've reviewed).</li>
+          <li>Your app preferences, such as Practice Style and hidden-word settings.</li>
+        </ul>
+        <p>None of this is uploaded to us or to any third party. It's stored using Apple's on-device storage frameworks, the same way any local app database works.</p>
+
+        <h3>Importing a CSV file</h3>
+        <p>When you import a vocabulary list from a CSV file, Vocabulary reads the file you select using the system's file picker and copies its contents into your local database. The file itself is never sent anywhere — the whole process happens on your device.</p>
+
+        <h3>What we don't collect</h3>
+        <ul>
+          <li>No account or sign-in is required to use the app.</li>
+          <li>No analytics, crash reporting, or usage tracking of any kind.</li>
+          <li>No advertising or ad networks.</li>
+          <li>No access to your camera, photos, contacts, or location.</li>
+          <li>No data is sold, shared, or transmitted to third parties — because none is collected in the first place.</li>
+        </ul>
+
+        <h3>Children's privacy</h3>
+        <p>Vocabulary does not knowingly collect any personal information from anyone, including children under 13. Since the app doesn't collect data at all, this applies equally regardless of the user's age.</p>
+
+        <h3>Deleting your data</h3>
+        <p>You can delete any list or entry directly within the app at any time. Deleting the app from your device removes its local database, including all vocabulary lists and settings, completely. Because nothing is stored on our servers, there's no separate data-deletion request to make — removing it from your device is enough.</p>
+
+        <h3>Changes to this policy</h3>
+        <p>If Vocabulary's data practices ever change (for example, if a future version adds an optional cloud sync feature), this page will be updated before that version is released, along with the "Effective date" above.</p>
+
+        <div class="vocab-privacy-contact">
+          <h3 style="margin-top:0;">Questions?</h3>
+          <p>If anything here is unclear, email me directly:</p>
+          <p><a href="mailto:yourvocabularyapp@gmail.com?subject=Vocabulary%20App%20Privacy%20Question">yourvocabularyapp@gmail.com</a></p>
+          <p class="muted">See also the <a href="posts/vocabulary-words-practice-app/index.html">Vocabulary support page</a> for FAQs and troubleshooting.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="currentYear"></span> Konstantinos Kolioulis</p>
+    </footer>
+  </div>
+
+  <script>
+    const yearEl = document.getElementById('currentYear');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
